@@ -46,7 +46,7 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// NUMBER
+	// NUMBER assignment logic
 	if (!isNaN(value)) {
 		displayText.textContent += value;
 
@@ -58,14 +58,21 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// OPERATOR
-	if (["+", "-", "x", "/"].includes(value)) {
-		if (!number1) return; // prevent operator before number
+	// OPERATOR assignment logic
+if (["+", "-", "x", "/"].includes(value)) {
+	if (!number1) return;
 
-		operator = value === "x" ? "*" : value;
-		displayText.textContent += value;
-		return;
+	if (operator && number2) {
+		const result = operate(operator, Number(number1), Number(number2));
+		number1 = result.toString();
+		number2 = "";
+		displayText.textContent = number1;
 	}
+
+	operator = value === "x" ? "*" : value;
+	displayText.textContent += value;
+	return;
+}
 
 	// EQUALS
 	if (value === "=") {
