@@ -25,6 +25,17 @@ function operate(op, n1, n2) {
 	}
 }
 
+function toggleSign(num) {
+	if (!num || num === "0") return num;
+	if (num.startsWith("-")) return num.slice(1);
+	return `-${num}`;
+}
+
+function toPercent(num) {
+	if (!num) return num;
+	return formatResult(Number(num) / 100);
+}
+
 // Prevent floating-point issues
 function formatResult(num) {
 	if (typeof num !== "number") return num;
@@ -53,6 +64,28 @@ function handleInput(value) {
 			number1 = number1.slice(0, -1);
 		}
 		displayText.textContent = number1 + (operator || "") + number2;
+		return;
+	}
+
+	// SIGN TOGGLE
+	if (value === "±") {
+		if (number2) {
+			number2 = toggleSign(number2);
+		} else {
+			number1 = toggleSign(number1);
+		}
+		displayText.textContent = (number1 + (operator || "") + number2) || "0";
+		return;
+	}
+
+	// PERCENT
+	if (value === "%") {
+		if (number2) {
+			number2 = toPercent(number2);
+		} else {
+			number1 = toPercent(number1);
+		}
+		displayText.textContent = (number1 + (operator || "") + number2) || "0";
 		return;
 	}
 
@@ -117,7 +150,7 @@ buttonHolder.addEventListener("click", (e) => {
 	const button = e.target.closest("button");
 	if (!button) return;
 
-	const value = button.textContent === "x" ? "*" : button.textContent;
+	const value = button.dataset.value || button.textContent;
 	handleInput(value);
 });
 

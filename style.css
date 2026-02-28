@@ -7,10 +7,11 @@
 }
 
 body {
-  height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 12px;
   background: linear-gradient(135deg, #1e1e2f, #111118);
 }
 
@@ -64,10 +65,25 @@ button:not(.operator):not(.special) {
   color: #fff;
 }
 
+.clear {
+  background: #ffffff;
+  color: #1c1c25;
+}
+
+.backspace {
+  background: #f1f1f1;
+  color: #1c1c25;
+}
+
 /* Operator buttons */
 .operator {
   background: #ff9500;
   color: white;
+}
+
+.equal {
+  background: #9be37e;
+  color: #103503;
 }
 
 /* Special buttons (clear, backspace, equals) */
@@ -104,5 +120,28 @@ button:active {
   button {
     height: 55px;
     font-size: 1.1rem;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  body {
+    align-items: flex-start;
+    padding: 8px;
+  }
+
+  .calculator {
+    max-width: 720px;
+    padding: 12px;
+  }
+
+  .displayText {
+    height: 54px;
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+  }
+
+  button {
+    height: 44px;
+    font-size: 1rem;
   }
 }
