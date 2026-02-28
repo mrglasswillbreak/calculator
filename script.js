@@ -1,43 +1,44 @@
-//Declaring global variables
+// Declaring global state variables
 let number1 = "";
 let number2 = "";
 let operator = null;
 
-const displayText = document.querySelector(".displayText")
+const displayText = document.querySelector(".displayText");
 const buttonHolder = document.querySelector(".buttonHolder");
 
-//Creating 4 helper operator functions
-function add(num1, num2) {
-	return num1 + num2;
-}
-function subtract(num1, num2) {
-	return num1 - num2;
-}
-function multiply(num1, num2) {
-	return num1 * num2;
-}
-function divide(num1, num2) {
-	return num1 / num2;
+// Operator helper functions
+function add(a, b) { return a + b; }
+function subtract(a, b) { return a - b; }
+function multiply(a, b) { return a * b; }
+function divide(a, b) {
+	if (b === 0) return "Error"; // avoid infinity
+	return a / b;
 }
 
-//creating operate function to take input and call operators based on input
+// Operate function
 function operate(op, n1, n2) {
-	if (op === "+") return add(n1, n2);
-	if (op === "-") return subtract(n1, n2);
-	if (op === "*") return multiply(n1, n2);
-	if (op === "/") return divide(n1, n2);
-
-	return "Invalid operator";
+	switch(op) {
+		case "+": return add(n1, n2);
+		case "-": return subtract(n1, n2);
+		case "*": return multiply(n1, n2);
+		case "/": return divide(n1, n2);
+		default: return "Invalid operator";
+	}
 }
 
-//add event listener to the button holder variable, and defining conditional chain of if else statements to handle calculation logic
+// Decimal helped function
+function formatResult(num) {
+	return Number(num.toFixed(10)).toString(); // removes extra floating point
+}
+
+// Event delegation listener & button press handler logic
 buttonHolder.addEventListener("click", (e) => {
 	const button = e.target.closest("button");
 	if (!button) return;
 
 	const value = button.textContent;
 
-	// CLEAR
+	// CLEAR btn logic
 	if (value === "clear") {
 		displayText.textContent = "";
 		number1 = "";
@@ -46,44 +47,69 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// NUMBER assignment logic
-	if (!isNaN(value)) {
-		displayText.textContent += value;
+	// BACKSPACE btn logic
+	if (value === "⌫") {
+		if (number2) {
+			number2 = number2.slice(0, -1);
+		} else if (operator) {
+			operator = null;
+		} else {
+			number1 = number1.slice(0, -1);
+		}
+		displayText.textContent = number1 + (operator || "") + number2;
+		return;
+	}
 
+	// DECIMAL button logic
+	if (value === ".") {
+		if (!operator && !number1.includes(".")) {
+			number1 += ".";
+			displayText.textContent += ".";
+		} else if (operator && !number2.includes(".")) {
+			number2 += ".";
+			displayText.textContent += ".";
+		}
+		return;
+	}
+
+	// NUMBER button logic
+	if (!isNaN(value)) {
 		if (!operator) {
 			number1 += value;
 		} else {
 			number2 += value;
 		}
+		displayText.textContent += value;
 		return;
 	}
 
-	// OPERATOR assignment logic
-if (["+", "-", "x", "/"].includes(value)) {
-	if (!number1) return;
+	// OPERATOR btn logic
+	if (["+", "-", "x", "/"].includes(value)) {
+		if (!number1) return;
 
-	if (operator && number2) {
-		const result = operate(operator, Number(number1), Number(number2));
-		number1 = result.toString();
-		number2 = "";
-		displayText.textContent = number1;
+		// Chained calculations logic
+		if (operator && number2) {
+			const result = formatResult(operate(operator, Number(number1), Number(number2)));
+			number1 = result;
+			number2 = "";
+			displayText.textContent = result;
+		}
+
+		operator = value === "x" ? "*" : value;
+		displayText.textContent += value;
+		return;
 	}
 
-	operator = value === "x" ? "*" : value;
-	displayText.textContent += value;
-	return;
-}
-
-	// EQUALS
+	// EQUALS btn logic
 	if (value === "=") {
 		if (!number1 || !number2 || !operator) return;
 
-		const result = operate(operator, Number(number1), Number(number2));
+		const result = formatResult(operate(operator, Number(number1), Number(number2)));
 
 		displayText.textContent = result;
 
-		// prepare for next calculation
-		number1 = result.toString();
+		// Initialize next calculation
+		number1 = result;
 		number2 = "";
 		operator = null;
 	}
