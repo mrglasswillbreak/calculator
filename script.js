@@ -1,4 +1,4 @@
-// Declaring global state variables
+// ================= STATE =================
 let number1 = "";
 let number2 = "";
 let operator = null;
@@ -6,39 +6,35 @@ let operator = null;
 const displayText = document.querySelector(".displayText");
 const buttonHolder = document.querySelector(".buttonHolder");
 
-// Operator helper functions
+// ================= OPERATORS =================
 function add(a, b) { return a + b; }
 function subtract(a, b) { return a - b; }
 function multiply(a, b) { return a * b; }
 function divide(a, b) {
-	if (b === 0) return "Error"; // avoid infinity
+	if (b === 0) return "Error";
 	return a / b;
 }
 
-// Operate function
 function operate(op, n1, n2) {
-	switch(op) {
+	switch (op) {
 		case "+": return add(n1, n2);
 		case "-": return subtract(n1, n2);
 		case "*": return multiply(n1, n2);
 		case "/": return divide(n1, n2);
-		default: return "Invalid operator";
+		default: return "Invalid";
 	}
 }
 
-// Decimal helped function
+// Prevent floating-point issues
 function formatResult(num) {
-	return Number(num.toFixed(10)).toString(); // removes extra floating point
+	if (typeof num !== "number") return num;
+	return Number(num.toFixed(10)).toString();
 }
 
-// Event delegation listener & button press handler logic
-buttonHolder.addEventListener("click", (e) => {
-	const button = e.target.closest("button");
-	if (!button) return;
+// ================= INPUT HANDLER =================
+function handleInput(value) {
 
-	const value = button.textContent;
-
-	// CLEAR btn logic
+	// CLEAR
 	if (value === "clear") {
 		displayText.textContent = "";
 		number1 = "";
@@ -47,7 +43,7 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// BACKSPACE btn logic
+	// BACKSPACE
 	if (value === "⌫") {
 		if (number2) {
 			number2 = number2.slice(0, -1);
@@ -60,19 +56,18 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// DECIMAL button logic
+	// DECIMAL
 	if (value === ".") {
 		if (!operator && !number1.includes(".")) {
 			number1 += ".";
-			displayText.textContent += ".";
 		} else if (operator && !number2.includes(".")) {
 			number2 += ".";
-			displayText.textContent += ".";
 		}
+		displayText.textContent = number1 + (operator || "") + number2;
 		return;
 	}
 
-	// NUMBER button logic
+	// NUMBER
 	if (!isNaN(value)) {
 		if (!operator) {
 			number1 += value;
@@ -83,34 +78,69 @@ buttonHolder.addEventListener("click", (e) => {
 		return;
 	}
 
-	// OPERATOR btn logic
-	if (["+", "-", "x", "/"].includes(value)) {
+	// OPERATOR
+	if (["+", "-", "*", "/"].includes(value)) {
 		if (!number1) return;
 
-		// Chained calculations logic
+		// chained calculation
 		if (operator && number2) {
-			const result = formatResult(operate(operator, Number(number1), Number(number2)));
+			const result = formatResult(
+				operate(operator, Number(number1), Number(number2))
+			);
 			number1 = result;
 			number2 = "";
-			displayText.textContent = result;
 		}
 
-		operator = value === "x" ? "*" : value;
-		displayText.textContent += value;
+		operator = value;
+		displayText.textContent = number1 + operator;
 		return;
 	}
 
-	// EQUALS btn logic
+	// EQUALS
 	if (value === "=") {
 		if (!number1 || !number2 || !operator) return;
 
-		const result = formatResult(operate(operator, Number(number1), Number(number2)));
+		const result = formatResult(
+			operate(operator, Number(number1), Number(number2))
+		);
 
 		displayText.textContent = result;
 
-		// Initialize next calculation
 		number1 = result;
 		number2 = "";
 		operator = null;
 	}
+}
+
+// ================= BUTTON SUPPORT =================
+buttonHolder.addEventListener("click", (e) => {
+	const button = e.target.closest("button");
+	if (!button) return;
+
+	const value = button.textContent === "x" ? "*" : button.textContent;
+	handleInput(value);
+});
+
+// ================= KEYBOARD SUPPORT =================
+document.addEventListener("keydown", (e) => {
+
+	// Numbers
+	if (!isNaN(e.key)) handleInput(e.key);
+
+	// Operators
+	if (["+", "-", "*", "/"].includes(e.key)) {
+		handleInput(e.key);
+	}
+
+	// Decimal
+	if (e.key === ".") handleInput(".");
+
+	// Enter = equals
+	if (e.key === "Enter") handleInput("=");
+
+	// Backspace
+	if (e.key === "Backspace") handleInput("⌫");
+
+	// Escape = clear
+	if (e.key === "Escape") handleInput("clear");
 });
